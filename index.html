@@ -50,13 +50,18 @@
         .main-container {
             background-image: url('home.png');
             z-index: 30;
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s;
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s, opacity 0.3s;
             transform: translateY(-5px);
+            opacity: 0;  /* 默认透明，让点击穿透到侧边栏 */
+            pointer-events: none;  /* 阻止点击穿透后误触发 */
         }
 
+        /* 侧边栏打开时，首页才变为不透明且可交互 */
         .main-container.open {
             transform: translateX(85vw) translateY(-5px) scale(0.94);
             border-radius: 12px;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .menu-trigger {
@@ -65,7 +70,8 @@
             left: 0;
             width: 70px;
             height: 100px;
-            z-index: 40;
+            z-index: 45;  /* 比首页高，确保打开时也能点到三横线 */
+            pointer-events: auto;  /* 菜单按钮始终可点 */
         }
 
         .close-overlay {
