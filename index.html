@@ -64,6 +64,7 @@
             position: fixed; top: 0; left: 0;
             width: 90px; height: 120px;
             z-index: 500; cursor: pointer;
+            transition: pointer-events 0s;
         }
 
         /* Tab 栏 */
@@ -95,49 +96,48 @@
         #pgzt  { background-image: url('gongzuotai.png'); }
         #ptxl  { background-image: url('tongxunlu.png'); }
 
-        /* ========================================= */
-        /* 个人资料页 — 滑入滑出动画 (核心修复区)      */
-        /* ========================================= */
+        /* 个人资料页 — 滑入滑出动画 */
         #profile {
             background-image: url('profile.png');
             z-index: 100;
             transform: translateX(100%);
-            /* 【修复】加入 visibility 的延迟过渡，保证滑出时先播放0.4s位移动画，然后再隐藏 */
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), visibility 0s 0.4s;
-            visibility: hidden; pointer-events: none;
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
         }
         #profile.show {
             transform: translateX(0);
             visibility: visible; pointer-events: auto;
-            /* 【修复】滑入时 visibility 立即生效(0s延迟)，直接触发位移动画 */
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), visibility 0s 0s;
         }
 
-        /* 返回按钮 */
+        /* 返回按钮 — 始终在最顶层，pointer-events 控制是否可点 */
         #profileBack {
             position: fixed; top: 0; left: 0;
             width: 100vw; height: 100vh;
-            z-index: 300; cursor: pointer;
-            display: none; pointer-events: none;
+            z-index: 500; cursor: pointer;
+            pointer-events: none;
         }
         #profileBack.show {
-            display: block; pointer-events: auto;
+            pointer-events: auto;
         }
 
     </style>
 </head>
 <body>
 
+    <!-- 侧边栏 -->
     <div class="layer" id="sidebar"></div>
 
+    <!-- 头像热区 -->
     <div id="sidebarProfile"></div>
 
+    <!-- 首页 -->
     <div class="layer" id="home">
         <div id="closeMask"></div>
     </div>
 
+    <!-- 汉堡热区 -->
     <div id="hamburger"></div>
 
+    <!-- Tab 栏 -->
     <div id="tabBar">
         <button class="tab active" id="tHome"></button>
         <button class="tab" id="tYj"></button>
@@ -146,13 +146,16 @@
         <button class="tab" id="tTxl"></button>
     </div>
 
+    <!-- 频道页面 -->
     <div class="page" id="pj"></div>
     <div class="page" id="pwd"></div>
     <div class="page" id="pgzt"></div>
     <div class="page" id="ptxl"></div>
 
+    <!-- 个人资料页 -->
     <div class="layer" id="profile"></div>
 
+    <!-- 返回按钮 -->
     <div id="profileBack"></div>
 
     <script>
@@ -178,12 +181,10 @@
         sidebarProfile.addEventListener('click', function(e) {
             e.stopPropagation();
             home.classList.remove('open');
-            hamburger.style.display = 'none';
-            // 【修复 Bug】强行隐藏头像热区，防止它挡住资料页左上角的返回点击
-            sidebarProfile.style.display = 'none'; 
-            
+            hamburger.style.pointerEvents = 'none';
             profile.classList.add('show');
             profileBack.classList.add('show');
+            profile.style.visibility = 'visible';
         });
 
         /* 关闭个人资料（滑退） */
@@ -191,12 +192,12 @@
             e.stopPropagation();
             profile.classList.remove('show');
             profileBack.classList.remove('show');
-            
             setTimeout(function() {
-                hamburger.style.display = '';
-                // 【修复 Bug】动画完全结束(0.4s)后，再把头像热区恢复
-                sidebarProfile.style.display = ''; 
-            }, 400);
+                if (!profile.classList.contains('show')) {
+                    profile.style.visibility = 'hidden';
+                }
+                hamburger.style.pointerEvents = '';
+            }, 420);
         });
 
         /* Tab 切换 */
