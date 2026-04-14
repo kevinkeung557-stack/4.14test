@@ -20,8 +20,7 @@
 
         .img-layer {
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
             width: 100vw;
             height: 100vh;
             background-size: cover;
@@ -46,13 +45,9 @@
 
         /* 关闭遮罩 */
         #closeMask {
-            position: fixed;
-            top: 0;
-            left: 15vw;
-            width: 85vw;
-            height: 100vh;
-            z-index: 41;
-            display: none;
+            position: fixed; top: 0; left: 15vw;
+            width: 85vw; height: 100vh;
+            z-index: 41; display: none;
         }
         #home.open ~ #closeMask { display: block; }
 
@@ -107,20 +102,26 @@
         /* 个人资料背景图 */
         #profileBg {
             position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            width: 100vw; height: calc(100vh - 68px); /* 底部留68px给Tab栏 */
             background-image: url('profile.png');
             background-size: cover;
             background-position: center;
-            /* 不设 touch-action，让 JS 自己处理触摸 */
         }
 
-        /* 返回按钮 */
+        /* 返回按钮 — 放在 profileLayer 外面，z-index 高于 profileBg */
         #profileBack {
-            position: fixed; top: 40px; left: 0;
-            width: 80px; height: 60px;
-            z-index: 300;
-            background: transparent; border: none; cursor: pointer;
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 150; /* 高于 profileBg 的 z-index */
+            background: transparent; border: none;
+            cursor: pointer;
             display: none;
+            /* 顶部刘海区域不响应，只有下方内容区可点 */
+            pointer-events: none;
+        }
+        #profileBack.show {
+            display: block;
+            pointer-events: auto;
         }
 
     </style>
@@ -146,10 +147,12 @@
     <div class="img-layer page" id="pgzt"></div>
     <div class="img-layer page" id="ptxl"></div>
 
+    <!-- 个人资料页 -->
     <div class="img-layer" id="profileLayer">
         <div id="profileBg"></div>
     </div>
-    <button id="profileBack"></button>
+    <!-- 返回按钮放在 profileLayer 外面 -->
+    <div id="profileBack"></div>
 
     <script>
         var home = document.getElementById('home');
@@ -175,48 +178,50 @@
         /* 打开个人资料 */
         profileHotspot.addEventListener('click', function(e) {
             e.stopPropagation();
-            home.classList.remove('open');   // 先关侧边栏
-            closeMask.style.display = 'none'; // 确保遮罩不挡路
+            home.classList.remove('open');
+            closeMask.style.display = 'none';
             profileLayer.classList.add('show');
-            profileBack.style.display = 'block';
+            profileBack.classList.add('show');
         });
 
         /* 关闭个人资料 */
         profileBack.addEventListener('click', function(e) {
             e.stopPropagation();
             profileLayer.classList.remove('show');
-            profileBack.style.display = 'none';
+            profileBack.classList.remove('show');
         });
 
         /* Tab 切换 */
-        var tabs = ['Home', 'Yj', 'Wd', 'Gzt', 'Txl'];
-        var pages = { Yj: 'pj', Wd: 'pwd', Gzt: 'pgzt', Txl: 'ptxl' };
+        var tabMap = { Home: null, Yj: 'pj', Wd: 'pwd', Gzt: 'pgzt', Txl: 'ptxl' };
 
-        tabs.forEach(function(tab) {
+        ['Home', 'Yj', 'Wd', 'Gzt', 'Txl'].forEach(function(tab) {
             document.getElementById('t' + tab).addEventListener('click', function() {
                 home.classList.remove('open');
-                Object.values(pages).forEach(function(id) {
+                // 隐藏所有频道页
+                ['pj', 'pwd', 'pgzt', 'ptxl'].forEach(function(id) {
                     document.getElementById(id).classList.remove('show');
                 });
-                tabs.forEach(function(t) {
-                    document.getElementById('t' + t).style.background = 'transparent';
+                // 重置所有 tab 背景
+                ['Home', 'Yj', 'Wd', 'Gzt', 'Txl'].forEach(function(t) {
+                    document.getElementById('t' + t).style.background = '';
                 });
-                if (tab !== 'Home') {
-                    document.getElementById(pages[tab]).classList.add('show');
+                // 显示对应页面
+                if (tabMap[tab]) {
+                    document.getElementById(tabMap[tab]).classList.add('show');
                 }
+                // 给当前 tab 加蓝色背景（用单独 class）
                 document.getElementById('t' + tab).style.background = 'rgba(0,150,255,0.3)';
             });
         });
 
-        /* 橡皮筋滑动（纯 JS，不靠浏览器原生 touch-action）*/
+        /* 橡皮筋滑动 */
         (function() {
-            var startY = 0, baseY = 0, dragging = false;
+            var startY = 0, dragging = false;
             var R = 0.4, MAX = 120;
 
             profileBg.addEventListener('touchstart', function(e) {
                 dragging = true;
                 startY = e.touches[0].clientY;
-                baseY = 0;
                 profileBg.style.transition = 'none';
             }, { passive: true });
 
