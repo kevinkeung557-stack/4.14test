@@ -7,6 +7,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>WeCom</title>
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+    <link rel="preload" href="home.png" as="image">
+    <link rel="preload" href="youjian.png" as="image">
+    <link rel="preload" href="wendang.png" as="image">
+    <link rel="preload" href="gongzuotai.png" as="image">
+    <link rel="preload" href="tongxunlu.png" as="image">
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: #000; overflow: hidden; height: 100vh; width: 100vw; }
@@ -29,6 +36,7 @@
             z-index: 10;
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
             transform: translateY(-5px); /* 你的垂直修正量 */
+            background-color: #fff; /* 【新增】给个白色底色，防止图片加载瞬间透明 */
         }
         #home.open { transform: translateX(85vw) translateY(-5px) scale(0.94); border-radius: 12px; box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
         .menu-btn { position: absolute; top: 0; left: 0; width: 70px; height: 100px; z-index: 15; }
@@ -37,24 +45,21 @@
         .tabs { position: absolute; bottom: 0; left: 0; width: 100%; height: 84px; display: flex; z-index: 25; }
         .tab-btn { flex: 1; height: 100%; }
 
-        /* 3. 个人资料页 (Page 3) */
+        /* 3. 个人资料页 */
         #prof {
             background-color: #f5f5f5;
             z-index: 100;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            overflow-y: scroll; /* 允许内部上下滑动 */
+            overflow-y: scroll;
             -webkit-overflow-scrolling: touch;
         }
         #prof.show { transform: translateX(0); }
-        
-        /* 使用背景图方式渲染 Page 3，确保不出现字符乱码 */
         .prof-bg {
             width: 100%;
-            /* 如果是长图，这里设为 150vh 左右 */
             height: 150vh; 
             background-image: url('profile.png');
-            background-size: 100% auto; /* 宽度铺满，高度自动 */
+            background-size: 100% auto;
             background-repeat: no-repeat;
         }
         .back-btn { position: fixed; top: 40px; left: 0; width: 80px; height: 60px; z-index: 110; }
@@ -90,6 +95,8 @@
         function togM() { h.classList.toggle('open'); }
         function showP() { p.classList.add('show'); p.style.transform = 'translateX(0)'; }
         function hidP() { p.classList.remove('show'); p.style.transform = 'translateX(100%)'; setTimeout(() => { p.scrollTop = 0; }, 400); }
+        
+        // 切换 Tab：直接修改背景图
         function swT(img) { h.style.backgroundImage = `url('${img}')`; }
 
         // 水平右滑手势关闭
