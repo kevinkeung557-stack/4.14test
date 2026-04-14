@@ -106,17 +106,17 @@
             background-image: url('profile.png');
             background-size: cover;
             background-position: center;
+            pointer-events: none;
         }
 
         /* 返回按钮 — 放在 profileLayer 外面，z-index 高于 profileBg */
         #profileBack {
             position: fixed; top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            width: 80px; height: 60px;
             z-index: 150; /* 高于 profileBg 的 z-index */
             background: transparent; border: none;
             cursor: pointer;
             display: none;
-            /* 顶部刘海区域不响应，只有下方内容区可点 */
             pointer-events: none;
         }
         #profileBack.show {
@@ -178,6 +178,7 @@
         /* 打开个人资料 */
         profileHotspot.addEventListener('click', function(e) {
             e.stopPropagation();
+            console.log('profileHotspot clicked');
             home.classList.remove('open');
             closeMask.style.display = 'none';
             profileLayer.classList.add('show');
@@ -187,6 +188,7 @@
         /* 关闭个人资料 */
         profileBack.addEventListener('click', function(e) {
             e.stopPropagation();
+            console.log('back clicked');
             profileLayer.classList.remove('show');
             profileBack.classList.remove('show');
         });
@@ -203,7 +205,7 @@
                 });
                 // 重置所有 tab 背景
                 ['Home', 'Yj', 'Wd', 'Gzt', 'Txl'].forEach(function(t) {
-                    document.getElementById('t' + t).style.background = '';
+                    document.getElementById('t' + t).style.background = 'transparent';
                 });
                 // 显示对应页面
                 if (tabMap[tab]) {
