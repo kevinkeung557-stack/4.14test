@@ -18,7 +18,7 @@
             width: 100vw;
         }
 
-        .app-layer {
+        .layer {
             position: fixed;
             top: 0;
             left: 0;
@@ -30,138 +30,93 @@
         }
 
         /* 侧边栏 */
-        .sidebar-bg {
-            background-image: url('sidebar.png');
-            z-index: 25;
+        #sidebar { background-image: url('sidebar.png'); z-index: 10; }
+
+        /* 侧边栏头像热区 */
+        #sidebarProfile {
+            position: fixed; top: 40px; left: 0;
+            width: 300px; height: 120px;
+            z-index: 400; cursor: pointer;
         }
 
-        /* 侧边栏头像热区 — 独立于 sidebar stacking context */
-        .sidebar-profile-trigger {
-            position: fixed;
-            top: 40px;
-            left: 0;
-            width: 300px;
-            height: 120px;
-            z-index: 26;
-            cursor: pointer;
-        }
-
-        /* 消息页（首页） */
-        .main-container {
+        /* 首页 */
+        #home {
             background-image: url('home.png');
             z-index: 30;
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s;
             transform: translateY(-5px);
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s;
         }
-
-        .main-container.open {
+        #home.open {
             transform: translateX(85vw) translateY(-5px) scale(0.94);
             border-radius: 12px;
         }
 
-        /* 左上角汉堡热区 — 覆盖 home.png 上汉堡图标的大致位置 */
-        .hamburger-area {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 90px;
-            height: 120px;
-            z-index: 500;
-            cursor: pointer;
-        }
-
         /* 关闭遮罩 */
-        .close-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            z-index: 41;
+        #closeMask {
+            position: fixed; top: 0; left: 15vw;
+            width: 85vw; height: 100vh;
+            z-index: 41; display: none;
         }
-        .main-container.open ~ .close-overlay {
-            display: block;
+        #home.open ~ #closeMask { display: block; }
+
+        /* 汉堡热区 */
+        #hamburger {
+            position: fixed; top: 0; left: 0;
+            width: 90px; height: 120px;
+            z-index: 500; cursor: pointer;
         }
 
-        /* 底部 Tab 栏 */
-        .tab-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100vw;
-            height: 68px;
-            z-index: 200;
-            display: flex;
+        /* Tab 栏 */
+        #tabBar {
+            position: fixed; bottom: 0; left: 0;
+            width: 100vw; height: 68px;
+            z-index: 200; display: flex;
         }
-
-        .tab-btn {
-            flex: 1;
-            height: 100%;
-            background: transparent;
-            border: none;
-            cursor: pointer;
+        .tab {
+            flex: 1; height: 100%;
+            background: transparent; border: none; cursor: pointer;
         }
 
         /* 频道页面 */
-        .page-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+        .page {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background-size: 100% 100%;
             background-repeat: no-repeat;
             background-position: center;
             z-index: 60;
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
+            visibility: hidden; opacity: 0; pointer-events: none;
         }
-
-        .page-layer.show {
-            visibility: visible;
-            opacity: 1;
-            pointer-events: auto;
+        .page.show {
+            visibility: visible; opacity: 1; pointer-events: auto;
         }
+        #pj    { background-image: url('youjian.png'); }
+        #pwd   { background-image: url('wendang.png'); }
+        #pgzt  { background-image: url('gongzuotai.png'); }
+        #ptxl  { background-image: url('tongxunlu.png'); }
 
-        .youjian-layer    { background-image: url('youjian.png'); }
-        .wendang-layer    { background-image: url('wendang.png'); }
-        .gongzuotai-layer { background-image: url('gongzuotai.png'); }
-        .tongxunlu-layer  { background-image: url('tongxunlu.png'); }
-
-        /* 个人资料页 */
-        .profile-layer {
+        /* 个人资料页 — 滑入滑出动画 */
+        #profile {
             background-image: url('profile.png');
             z-index: 100;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            visibility: hidden;
-            pointer-events: none;
+            visibility: hidden; pointer-events: none;
         }
-
-        .profile-layer.show {
+        #profile.show {
             transform: translateX(0);
-            visibility: visible;
-            pointer-events: auto;
+            visibility: visible; pointer-events: auto;
         }
 
         /* 返回按钮 */
-        .profile-back-trigger {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 300;
-            cursor: pointer;
-            display: none;
-            pointer-events: none;
+        #profileBack {
+            position: fixed; top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 300; cursor: pointer;
+            display: none; pointer-events: none;
         }
-
-        .profile-back-trigger.show {
-            display: block;
-            pointer-events: auto;
+        #profileBack.show {
+            display: block; pointer-events: auto;
         }
 
     </style>
@@ -169,193 +124,95 @@
 <body>
 
     <!-- 侧边栏 -->
-    <div class="sidebar-bg app-layer" id="sidebar"></div>
+    <div class="layer" id="sidebar"></div>
 
-    <!-- 侧边栏头像热区 — 独立于 sidebar stacking context -->
-    <div class="sidebar-profile-trigger" id="sidebarProfile"></div>
+    <!-- 头像热区 -->
+    <div id="sidebarProfile"></div>
 
     <!-- 首页 -->
-    <div class="main-container app-layer" id="app">
-        <div class="close-overlay"></div>
+    <div class="layer" id="home">
+        <div id="closeMask"></div>
     </div>
 
-    <!-- 左上角汉堡热区 -->
-    <div class="hamburger-area" id="hamburgerArea"></div>
+    <!-- 汉堡热区 -->
+    <div id="hamburger"></div>
 
-    <!-- 底部 Tab -->
-    <div class="tab-bar">
-        <button class="tab-btn active" id="tabHome"></button>
-        <button class="tab-btn" id="tabYoujian"></button>
-        <button class="tab-btn" id="tabWendang"></button>
-        <button class="tab-btn" id="tabGongzuotai"></button>
-        <button class="tab-btn" id="tabTongxunlu"></button>
+    <!-- Tab 栏 -->
+    <div id="tabBar">
+        <button class="tab active" id="tHome"></button>
+        <button class="tab" id="tYj"></button>
+        <button class="tab" id="tWd"></button>
+        <button class="tab" id="tGzt"></button>
+        <button class="tab" id="tTxl"></button>
     </div>
 
-    <!-- 邮件页 -->
-    <div class="page-layer youjian-layer" id="pageYoujian"></div>
-
-    <!-- 文档页 -->
-    <div class="page-layer wendang-layer" id="pageWendang"></div>
-
-    <!-- 工作台页 -->
-    <div class="page-layer gongzuotai-layer" id="pageGongzuotai"></div>
-
-    <!-- 通讯录页 -->
-    <div class="page-layer tongxunlu-layer" id="pageTongxunlu"></div>
+    <!-- 频道页面 -->
+    <div class="page" id="pj"></div>
+    <div class="page" id="pwd"></div>
+    <div class="page" id="pgzt"></div>
+    <div class="page" id="ptxl"></div>
 
     <!-- 个人资料页 -->
-    <div class="profile-layer app-layer" id="profilePage"></div>
+    <div class="layer" id="profile"></div>
 
     <!-- 返回按钮 -->
-    <div class="profile-back-trigger" id="profileBackBtn"></div>
+    <div id="profileBack"></div>
 
     <script>
-        var app = document.getElementById('app');
-        var hamburger = document.getElementById('hamburgerArea');
-        var closeOverlay = document.querySelector('.close-overlay');
-        var sidebarProfile = document.querySelector('.sidebar-profile-trigger');
-        var profilePage = document.getElementById('profilePage');
-        var profileBackBtn = document.getElementById('profileBackBtn');
-        var tabBar = document.querySelector('.tab-bar');
+        var home = document.getElementById('home');
+        var closeMask = document.getElementById('closeMask');
+        var hamburger = document.getElementById('hamburger');
+        var sidebarProfile = document.getElementById('sidebarProfile');
+        var profile = document.getElementById('profile');
+        var profileBack = document.getElementById('profileBack');
 
         /* 打开/关闭侧边栏 */
-        function toggleSidebar(e) {
-            if (e) e.stopPropagation();
-            // 打开侧边栏时先关闭所有 tab 页面
-            if (!app.classList.contains('open')) {
-                ['pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu'].forEach(function(id) {
-                    document.getElementById(id).classList.remove('show');
-                });
-                document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
-                document.getElementById('tabHome').classList.add('active');
-            }
-            app.classList.toggle('open');
-        }
-
-        function closeSidebar(e) {
-            if (e) e.stopPropagation();
-            app.classList.remove('open');
-        }
-
-        hamburger.addEventListener('click', toggleSidebar);
-        hamburger.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            toggleSidebar();
-        }, { passive: false });
-
-        closeOverlay.addEventListener('click', closeSidebar);
-
-        /* 打开个人资料 */
-        function showProfile(e) {
-            if (e) e.stopPropagation();
-            closeSidebar();
-            // 打开 profile 时先关闭所有 tab 页面
-            ['pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu'].forEach(function(id) {
-                document.getElementById(id).classList.remove('show');
-            });
-            document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
-            profilePage.classList.add('show');
-            profileBackBtn.classList.add('show');
-            profilePage.style.visibility = 'visible';
-        }
-
-        document.getElementById('sidebarProfile').addEventListener('click', showProfile);
-        document.getElementById('sidebarProfile').addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            showProfile();
-        }, { passive: false });
-
-        /* 关闭个人资料 */
-        function hideProfile(e) {
-            if (e) e.stopPropagation();
-            profilePage.classList.remove('show');
-            profileBackBtn.classList.remove('show');
-            setTimeout(function() {
-                if (!profilePage.classList.contains('show')) {
-                    profilePage.style.visibility = 'hidden';
-                }
-            }, 420);
-        }
-
-        profileBackBtn.addEventListener('click', hideProfile);
-        profileBackBtn.addEventListener('touchstart', function(e) {
-            e.preventDefault();
-            hideProfile();
-        }, { passive: false });
-
-        /* Tab 切换 */
-        var tabMap = { Home: null, Youjian: 'pageYoujian', Wendang: 'pageWendang', Gongzuotai: 'pageGongzuotai', Tongxunlu: 'pageTongxunlu' };
-
-        Object.keys(tabMap).forEach(function(tab) {
-            document.getElementById('tab' + tab).addEventListener('click', function() {
-                closeSidebar();
-                ['pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu'].forEach(function(id) {
-                    document.getElementById(id).classList.remove('show');
-                });
-                document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
-                if (tabMap[tab]) {
-                    document.getElementById(tabMap[tab]).classList.add('show');
-                }
-                document.getElementById('tab' + tab).classList.add('active');
-            });
+        hamburger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            home.classList.toggle('open');
         });
 
-        /* ========================================= */
-        /* 橡皮筋弹性滑动 — 所有页面统一处理 */
-        /* ========================================= */
-        (function() {
-            var R = 0.08;
-            var MAX = 12;
-            var pages = ['app', 'pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu', 'profilePage'];
+        closeMask.addEventListener('click', function(e) {
+            e.stopPropagation();
+            home.classList.remove('open');
+        });
 
-            pages.forEach(function(pageId) {
-                var el = document.getElementById(pageId);
-                if (!el) return;
-                var startY = 0, startX = 0, dragging = false, baseTX = 0, baseTY = 0;
+        /* 打开个人资料（滑入） */
+        sidebarProfile.addEventListener('click', function(e) {
+            e.stopPropagation();
+            home.classList.remove('open');
+            profile.classList.add('show');
+            profileBack.classList.add('show');
+            profile.style.visibility = 'visible';
+        });
 
-                function parseMatrix(el) {
-                    var m = window.getComputedStyle(el).transform;
-                    if (m === 'none') return { tx: 0, ty: 0 };
-                    var p = m.split(',');
-                    return { tx: parseFloat(p[4]) || 0, ty: parseFloat(p[5]) || 0 };
+        /* 关闭个人资料（滑退） */
+        profileBack.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profile.classList.remove('show');
+            profileBack.classList.remove('show');
+            setTimeout(function() {
+                if (!profile.classList.contains('show')) {
+                    profile.style.visibility = 'hidden';
                 }
+            }, 420);
+        });
 
-                el.addEventListener('touchstart', function(e) {
-                    dragging = true;
-                    startY = e.touches[0].clientY;
-                    startX = e.touches[0].clientX;
-                    var p = parseMatrix(el);
-                    baseTX = p.tx; baseTY = p.ty;
-                    el.style.transition = 'none';
-                }, { passive: true });
-
-                el.addEventListener('touchmove', function(e) {
-                    if (!dragging) return;
-                    e.preventDefault();
-                    var distY = e.touches[0].clientY - startY;
-                    var distX = e.touches[0].clientX - startX;
-                    if (Math.abs(distY) < Math.abs(distX)) return;
-                    var resisted = distY * R;
-                    if (resisted > MAX)  resisted = MAX + (resisted - MAX) * 0.1;
-                    if (resisted < -MAX) resisted = -MAX + (resisted + MAX) * 0.1;
-                    el.style.transform = 'translateX(' + baseTX + 'px) translateY(' + (baseTY + resisted) + 'px)';
-                }, { passive: false });
-
-                function springBack() {
-                    el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                    el.style.transform = 'translateX(' + baseTX + 'px) translateY(' + baseTY + 'px)';
-                    var orig = (pageId === 'app') ? 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s' : '';
-                    setTimeout(function() { if (orig) el.style.transition = orig; }, 600);
+        /* Tab 切换 */
+        var pages = { Yj: 'pj', Wd: 'pwd', Gzt: 'pgzt', Txl: 'ptxl' };
+        ['Home', 'Yj', 'Wd', 'Gzt', 'Txl'].forEach(function(tab) {
+            document.getElementById('t' + tab).addEventListener('click', function() {
+                home.classList.remove('open');
+                Object.values(pages).forEach(function(id) {
+                    document.getElementById(id).classList.remove('show');
+                });
+                document.querySelectorAll('.tab').forEach(function(b) { b.classList.remove('active'); });
+                if (tab !== 'Home') {
+                    document.getElementById(pages[tab]).classList.add('show');
                 }
-
-                el.addEventListener('touchend',   function() { if (dragging) { dragging = false; springBack(); } });
-                el.addEventListener('touchcancel', function() { if (dragging) { dragging = false; springBack(); } });
+                document.getElementById('t' + tab).classList.add('active');
             });
-        })();
-
-        document.addEventListener('touchmove', function(e) {
-            if (profilePage.classList.contains('show')) e.preventDefault();
-        }, { passive: false });
+        });
     </script>
 </body>
 </html>
