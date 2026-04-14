@@ -5,69 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>企业微信</title>
+    <title>WeCom</title>
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
-
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { background: #000; overflow: hidden; height: 100vh; width: 100vw; }
         
-        body {
-            background-color: #000;
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            image-rendering: -webkit-optimize-contrast;
-        }
-
-        /* 基础层样式 */
-        .layer {
+        .page {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
             background-size: 100% 100%;
             background-repeat: no-repeat;
-            background-position: center;
         }
 
-        /* 1. 侧边栏（最底层） */
-        #side {
-            background-image: url('sidebar.png');
-            z-index: 1;
-        }
-        /* 侧边栏上的头像热区 */
-        .to-prof-hotspot {
-            position: absolute;
-            top: 40px;
-            left: 0;
-            width: 260px;
-            height: 120px;
-            z-index: 5;
-        }
+        /* 1. 侧边栏层 */
+        #side { background-image: url('sidebar.png'); z-index: 1; }
+        .to-prof { position: absolute; top: 40px; left: 0; width: 260px; height: 120px; z-index: 5; }
 
-        /* 2. 首页（中层） */
+        /* 2. 首页层 */
         #home {
             background-image: url('home.png');
             z-index: 10;
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
             transform: translateY(-5px); /* 你的垂直修正量 */
         }
-        #home.open {
-            transform: translateX(85vw) translateY(-5px) scale(0.94);
-            border-radius: 12px;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-        }
-        /* 首页菜单热区 */
+        #home.open { transform: translateX(85vw) translateY(-5px) scale(0.94); border-radius: 12px; box-shadow: -10px 0 30px rgba(0,0,0,0.5); }
         .menu-btn { position: absolute; top: 0; left: 0; width: 70px; height: 100px; z-index: 15; }
-        /* 侧滑后的透明遮罩 */
-        .home-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 20; }
-        #home.open .home-overlay { display: block; }
-        /* 首页底部 TabBar 热区 */
-        .tab-box { position: absolute; bottom: 0; left: 0; width: 100%; height: 84px; display: flex; z-index: 25; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 20; }
+        #home.open .overlay { display: block; }
+        .tabs { position: absolute; bottom: 0; left: 0; width: 100%; height: 84px; display: flex; z-index: 25; }
         .tab-btn { flex: 1; height: 100%; }
 
-        /* 3. 个人资料页（最高层）- 水平滑进 */
+        /* 3. 个人资料页 (Page 3) */
         #prof {
             background-color: #f5f5f5;
             z-index: 100;
@@ -77,22 +47,29 @@
             -webkit-overflow-scrolling: touch;
         }
         #prof.show { transform: translateX(0); }
-        /* 个人页内的长图 */
-        .prof-img { width: 100%; display: block; height: auto; min-height: 100.1vh; }
-        /* 固定在顶部的返回按钮 */
+        
+        /* 使用背景图方式渲染 Page 3，确保不出现字符乱码 */
+        .prof-bg {
+            width: 100%;
+            /* 如果是长图，这里设为 150vh 左右 */
+            height: 150vh; 
+            background-image: url('profile.png');
+            background-size: 100% auto; /* 宽度铺满，高度自动 */
+            background-repeat: no-repeat;
+        }
         .back-btn { position: fixed; top: 40px; left: 0; width: 80px; height: 60px; z-index: 110; }
     </style>
 </head>
 <body>
 
-    <div id="side" class="layer">
-        <div class="to-prof-hotspot" onclick="showP()"></div>
+    <div id="side" class="page">
+        <div class="to-prof" onclick="showP()"></div>
     </div>
 
-    <div id="home" class="layer">
+    <div id="home" class="page">
         <div class="menu-btn" onclick="togM()"></div>
-        <div class="home-overlay" onclick="togM()"></div>
-        <div class="tab-box">
+        <div class="overlay" onclick="togM()"></div>
+        <div class="tabs">
             <div class="tab-btn" onclick="swT('home.png')"></div>
             <div class="tab-btn" onclick="swT('youjian.png')"></div>
             <div class="tab-btn" onclick="swT('wendang.png')"></div>
@@ -101,9 +78,9 @@
         </div>
     </div>
 
-    <div id="prof" class="layer">
+    <div id="prof" class="page">
         <div class="back-btn" onclick="hidP()"></div>
-        < img src="profile.png" class="prof-img">
+        <div class="prof-bg"></div>
     </div>
 
     <script>
@@ -111,11 +88,11 @@
         const p = document.getElementById('prof');
 
         function togM() { h.classList.toggle('open'); }
-        function showP() { p.classList.add('show'); }
-        function hidP() { p.classList.remove('show'); setTimeout(() => { p.scrollTop = 0; }, 400); }
+        function showP() { p.classList.add('show'); p.style.transform = 'translateX(0)'; }
+        function hidP() { p.classList.remove('show'); p.style.transform = 'translateX(100%)'; setTimeout(() => { p.scrollTop = 0; }, 400); }
         function swT(img) { h.style.backgroundImage = `url('${img}')`; }
 
-        // 水平右滑手势关闭个人页
+        // 水平右滑手势关闭
         let sX = 0; let cX = 0;
         p.addEventListener('touchstart', (e) => { sX = e.touches[0].clientX; p.style.transition = 'none'; });
         p.addEventListener('touchmove', (e) => {
@@ -124,12 +101,11 @@
         });
         p.addEventListener('touchend', () => {
             p.style.transition = 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1)';
-            if (cX > 120) { hidP(); p.style.transform = 'translateX(100%)'; }
+            if (cX > 120) { hidP(); }
             else { p.style.transform = 'translateX(0)'; }
             cX = 0;
         });
 
-        // 彻底禁止 body 穿透滚动
         document.addEventListener('touchmove', (e) => {
             if (!p.contains(e.target)) e.preventDefault();
         }, { passive: false });
