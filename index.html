@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>企业微信</title>
@@ -16,8 +16,6 @@
             overflow: hidden;
             height: 100vh;
             width: 100vw;
-            image-rendering: -webkit-optimize-contrast;
-            color-profile: sRGB;
         }
 
         .app-layer {
@@ -44,6 +42,7 @@
             width: 300px;
             height: 120px;
             z-index: 20;
+            cursor: pointer;
         }
 
         /* 消息页（首页） */
@@ -59,18 +58,20 @@
             border-radius: 12px;
         }
 
-        /* 汉堡菜单按钮 — 独立于 main-container */
-        .menu-trigger {
+        /* 左上角汉堡热区 — 覆盖 home.png 上汉堡图标的大致位置 */
+        .hamburger-area {
             position: fixed;
             top: 0;
             left: 0;
-            width: 70px;
-            height: 100px;
-            z-index: 250;
+            width: 90px;
+            height: 120px;
+            z-index: 300;
+            cursor: pointer;
         }
 
+        /* 关闭遮罩 */
         .close-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -78,11 +79,11 @@
             display: none;
             z-index: 41;
         }
-        .main-container.open .close-overlay {
+        .main-container.open ~ .close-overlay {
             display: block;
         }
 
-        /* 底部 Tab 栏 — 放在最顶层，保证始终可点击 */
+        /* 底部 Tab 栏 */
         .tab-bar {
             position: fixed;
             bottom: 0;
@@ -101,7 +102,7 @@
             cursor: pointer;
         }
 
-        /* 频道页面 — 无动画、无阴影、直接显示 */
+        /* 频道页面 */
         .page-layer {
             position: fixed;
             top: 0;
@@ -144,7 +145,7 @@
             pointer-events: auto;
         }
 
-        /* 返回按钮 — 独立于 profilePage */
+        /* 返回按钮 */
         .profile-back-trigger {
             position: fixed;
             top: 0;
@@ -156,6 +157,7 @@
             display: none;
             pointer-events: none;
         }
+
         .profile-back-trigger.show {
             display: block;
             pointer-events: auto;
@@ -167,24 +169,24 @@
 
     <!-- 侧边栏 -->
     <div class="sidebar-bg app-layer">
-        <div class="sidebar-profile-trigger" onclick="showProfile(event)"></div>
+        <div class="sidebar-profile-trigger"></div>
     </div>
 
-    <!-- 消息页（首页） -->
+    <!-- 首页 -->
     <div class="main-container app-layer" id="app">
-        <div class="close-overlay" onclick="toggleMenu(event)"></div>
+        <div class="close-overlay"></div>
     </div>
 
-    <!-- 汉堡菜单按钮 — 独立于 app，避免层叠上下文限制 -->
-    <div class="menu-trigger" onclick="toggleMenu(event)"></div>
+    <!-- 左上角汉堡热区 -->
+    <div class="hamburger-area" id="hamburgerArea"></div>
 
     <!-- 底部 Tab -->
     <div class="tab-bar">
-        <button class="tab-btn active" id="tabHome" onclick="switchTab('home')"></button>
-        <button class="tab-btn" id="tabYoujian" onclick="switchTab('youjian')"></button>
-        <button class="tab-btn" id="tabWendang" onclick="switchTab('wendang')"></button>
-        <button class="tab-btn" id="tabGongzuotai" onclick="switchTab('gongzuotai')"></button>
-        <button class="tab-btn" id="tabTongxunlu" onclick="switchTab('tongxunlu')"></button>
+        <button class="tab-btn active" id="tabHome"></button>
+        <button class="tab-btn" id="tabYoujian"></button>
+        <button class="tab-btn" id="tabWendang"></button>
+        <button class="tab-btn" id="tabGongzuotai"></button>
+        <button class="tab-btn" id="tabTongxunlu"></button>
     </div>
 
     <!-- 邮件页 -->
@@ -200,60 +202,88 @@
     <div class="page-layer tongxunlu-layer" id="pageTongxunlu"></div>
 
     <!-- 个人资料页 -->
-    <div class="profile-layer app-layer" id="profilePage">
-    </div>
-    <!-- 返回按钮 — 独立于 profilePage -->
-    <div class="profile-back-trigger" onclick="hideProfile(event)"></div>
+    <div class="profile-layer app-layer" id="profilePage"></div>
+
+    <!-- 返回按钮 -->
+    <div class="profile-back-trigger" id="profileBackBtn"></div>
 
     <script>
-        function toggleMenu(e) {
-            e.stopPropagation();
-            document.getElementById('app').classList.toggle('open');
+        var app = document.getElementById('app');
+        var hamburger = document.getElementById('hamburgerArea');
+        var closeOverlay = document.querySelector('.close-overlay');
+        var sidebarProfile = document.querySelector('.sidebar-profile-trigger');
+        var profilePage = document.getElementById('profilePage');
+        var profileBackBtn = document.getElementById('profileBackBtn');
+        var tabBar = document.querySelector('.tab-bar');
+
+        /* 打开/关闭侧边栏 */
+        function toggleSidebar(e) {
+            if (e) e.stopPropagation();
+            app.classList.toggle('open');
         }
 
-        function switchTab(tab) {
-            // 关闭侧边栏
-            document.getElementById('app').classList.remove('open');
-
-            // 隐藏所有频道页
-            document.querySelectorAll('.page-layer').forEach(el => el.classList.remove('show'));
-
-            // 取消所有 Tab 高亮
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
-            // 显示对应页面（不是首页的话）
-            if (tab !== 'home') {
-                const pageId = 'page' + tab.charAt(0).toUpperCase() + tab.slice(1);
-                const pageEl = document.getElementById(pageId);
-                if (pageEl) pageEl.classList.add('show');
-            }
-
-            // 高亮当前 Tab
-            const tabId = 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1);
-            const tabEl = document.getElementById(tabId);
-            if (tabEl) tabEl.classList.add('active');
+        function closeSidebar(e) {
+            if (e) e.stopPropagation();
+            app.classList.remove('open');
         }
 
+        hamburger.addEventListener('click', toggleSidebar);
+        hamburger.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            toggleSidebar();
+        }, { passive: false });
+
+        closeOverlay.addEventListener('click', closeSidebar);
+
+        /* 打开个人资料 */
         function showProfile(e) {
-            e.stopPropagation();
-            document.getElementById('profilePage').classList.add('show');
-            document.getElementById('profilePage').style.visibility = 'visible';
-            document.querySelector('.profile-back-trigger').classList.add('show');
+            if (e) e.stopPropagation();
+            closeSidebar();
+            profilePage.classList.add('show');
+            profileBackBtn.classList.add('show');
+            profilePage.style.visibility = 'visible';
         }
 
+        sidebarProfile.addEventListener('click', showProfile);
+        sidebarProfile.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            showProfile();
+        }, { passive: false });
+
+        /* 关闭个人资料 */
         function hideProfile(e) {
-            e.stopPropagation();
-            document.getElementById('profilePage').classList.remove('show');
-            document.querySelector('.profile-back-trigger').classList.remove('show');
-            // 等待 0.4s 滑出动画完成后再隐藏
+            if (e) e.stopPropagation();
+            profilePage.classList.remove('show');
+            profileBackBtn.classList.remove('show');
             setTimeout(function() {
-                document.getElementById('profilePage').style.visibility = 'hidden';
+                if (!profilePage.classList.contains('show')) {
+                    profilePage.style.visibility = 'hidden';
+                }
             }, 420);
         }
 
-        document.addEventListener('touchmove', function(e) {
+        profileBackBtn.addEventListener('click', hideProfile);
+        profileBackBtn.addEventListener('touchstart', function(e) {
             e.preventDefault();
+            hideProfile();
         }, { passive: false });
+
+        /* Tab 切换 */
+        var tabMap = { Home: null, Youjian: 'pageYoujian', Wendang: 'pageWendang', Gongzuotai: 'pageGongzuotai', Tongxunlu: 'pageTongxunlu' };
+
+        Object.keys(tabMap).forEach(function(tab) {
+            document.getElementById('tab' + tab).addEventListener('click', function() {
+                closeSidebar();
+                ['pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu'].forEach(function(id) {
+                    document.getElementById(id).classList.remove('show');
+                });
+                document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+                if (tabMap[tab]) {
+                    document.getElementById(tabMap[tab]).classList.add('show');
+                }
+                document.getElementById('tab' + tab).classList.add('active');
+            });
+        });
 
         /* ========================================= */
         /* 橡皮筋弹性滑动 — 所有页面统一处理 */
@@ -261,29 +291,18 @@
         (function() {
             var R = 0.08;
             var MAX = 12;
-
-            // 需要橡皮筋效果的页面 ID 列表
             var pages = ['app', 'pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu', 'profilePage'];
 
             pages.forEach(function(pageId) {
                 var el = document.getElementById(pageId);
                 if (!el) return;
+                var startY = 0, startX = 0, dragging = false, baseTX = 0, baseTY = 0;
 
-                var startY = 0;
-                var startX = 0;
-                var dragging = false;
-                var baseTX = 0;   // touchstart 时的 translateX
-                var baseTY = 0;   // touchstart 时的 translateY
-
-                // 从 matrix 解析出当前 translateX 和 translateY
                 function parseMatrix(el) {
                     var m = window.getComputedStyle(el).transform;
                     if (m === 'none') return { tx: 0, ty: 0 };
-                    var parts = m.split(',');
-                    return {
-                        tx: parseFloat(parts[4]) || 0,
-                        ty: parseFloat(parts[5]) || 0
-                    };
+                    var p = m.split(',');
+                    return { tx: parseFloat(p[4]) || 0, ty: parseFloat(p[5]) || 0 };
                 }
 
                 el.addEventListener('touchstart', function(e) {
@@ -291,46 +310,37 @@
                     startY = e.touches[0].clientY;
                     startX = e.touches[0].clientX;
                     var p = parseMatrix(el);
-                    baseTX = p.tx;
-                    baseTY = p.ty;
+                    baseTX = p.tx; baseTY = p.ty;
                     el.style.transition = 'none';
                 }, { passive: true });
 
                 el.addEventListener('touchmove', function(e) {
                     if (!dragging) return;
                     e.preventDefault();
-
                     var distY = e.touches[0].clientY - startY;
                     var distX = e.touches[0].clientX - startX;
-
-                    // 垂直滑动幅度 >= 水平幅度才触发
                     if (Math.abs(distY) < Math.abs(distX)) return;
-
                     var resisted = distY * R;
                     if (resisted > MAX)  resisted = MAX + (resisted - MAX) * 0.1;
                     if (resisted < -MAX) resisted = -MAX + (resisted + MAX) * 0.1;
-
                     el.style.transform = 'translateX(' + baseTX + 'px) translateY(' + (baseTY + resisted) + 'px)';
                 }, { passive: false });
 
                 function springBack() {
                     el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
                     el.style.transform = 'translateX(' + baseTX + 'px) translateY(' + baseTY + 'px)';
-                    // 恢复各页面原本的 transition
-                    var originalTransition = pageId === 'app'
-                        ? 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s'
-                        : pageId === 'profilePage'
-                        ? 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1)'
-                        : '';
-                    setTimeout(function() {
-                        if (originalTransition) el.style.transition = originalTransition;
-                    }, 600);
+                    var orig = (pageId === 'app') ? 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s' : '';
+                    setTimeout(function() { if (orig) el.style.transition = orig; }, 600);
                 }
 
                 el.addEventListener('touchend',   function() { if (dragging) { dragging = false; springBack(); } });
                 el.addEventListener('touchcancel', function() { if (dragging) { dragging = false; springBack(); } });
             });
         })();
+
+        document.addEventListener('touchmove', function(e) {
+            if (profilePage.classList.contains('show')) e.preventDefault();
+        }, { passive: false });
     </script>
 </body>
 </html>
