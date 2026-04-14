@@ -90,9 +90,9 @@
         #pgzt  { background-image: url('gongzuotai.png'); }
         #ptxl  { background-image: url('tongxunlu.png'); }
 
-        /* 个人资料页 */
+        /* 个人资料页 — z-index 250 > tab bar 200，盖住整个界面 */
         #profileLayer {
-            z-index: 100;
+            z-index: 250;
             visibility: hidden; opacity: 0; pointer-events: none;
         }
         #profileLayer.show {
@@ -102,18 +102,18 @@
         /* 个人资料背景图 */
         #profileBg {
             position: fixed; top: 0; left: 0;
-            width: 100vw; height: calc(100vh - 68px); /* 底部留68px给Tab栏 */
+            width: 100vw; height: 100vh;
             background-image: url('profile.png');
             background-size: cover;
             background-position: center;
             pointer-events: none;
         }
 
-        /* 返回按钮 — 放在 profileLayer 外面，z-index 高于 profileBg */
+        /* 返回按钮 — z-index 300，最高 */
         #profileBack {
             position: fixed; top: 0; left: 0;
             width: 80px; height: 60px;
-            z-index: 150; /* 高于 profileBg 的 z-index */
+            z-index: 300;
             background: transparent; border: none;
             cursor: pointer;
             display: none;
