@@ -129,7 +129,6 @@
 
         /* 个人资料页 */
         .profile-layer {
-            background-image: url('profile.png');
             z-index: 100;
             visibility: hidden;
             opacity: 0;
@@ -152,19 +151,23 @@
             cursor: pointer;
         }
 
-        /* 橡皮筋弹性滑动 — 整个 profile-layer 可拖拽 */
-        .profile-layer {
-            touch-action: pan-y;
-            transition: visibility 0s, opacity 0.3s;
-        }
-
-        /* 内容层：真实内容装在这里，接收触摸事件 */
+        /* 内容层：背景图 + 触摸事件都在这里 */
         .profile-content {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background-image: url('profile.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
+            touch-action: pan-y;
+            cursor: grab;
+        }
+
+        .profile-content.dragging {
+            cursor: grabbing;
         }
 
     </style>
@@ -241,17 +244,14 @@
         /* 橡皮筋弹性滑动 */
         /* ========================================= */
         (function() {
-            const layer = document.getElementById('profilePage');
             const content = document.getElementById('profileContent');
 
             let startY = 0;
             let startTranslateY = 0;
-            let currentY = 0;
             let distY = 0;
             let dragging = false;
-            let animating = false;
-            const RESISTANCE = 0.35;
-            const MAX_DRAG = 100;
+            const RESISTANCE = 0.4;
+            const MAX_DRAG = 120;
 
             content.addEventListener('touchstart', function(e) {
                 dragging = true;
@@ -265,42 +265,33 @@
                 if (!dragging) return;
                 e.preventDefault();
 
-                currentY = e.touches[0].clientY;
-                distY = currentY - startY;
+                distY = e.touches[0].clientY - startY;
 
-                // 无边界时（正常滚动）：正常滚动
-                // 有边界时：加阻力
-                let offset = distY;
-                if (Math.abs(distY) > 5) {
-                    // sign * MIN(实际滑动 * 阻力, 最大拉伸距离)
-                    offset = Math.sign(distY) * Math.min(Math.abs(distY) * RESISTANCE, MAX_DRAG);
-                }
-
+                // 阻力：实际拉动距离 * RESISTANCE，上限 MAX_DRAG
+                const offset = Math.sign(distY) * Math.min(Math.abs(distY) * RESISTANCE, MAX_DRAG);
                 content.style.transform = 'translateY(' + (startTranslateY + offset) + 'px)';
             }, { passive: false });
 
-            content.addEventListener('touchend', function(e) {
+            function springBack() {
+                content.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                content.style.transform = 'translateY(0)';
+                setTimeout(function() {
+                    content.style.transition = 'none';
+                }, 600);
+            }
+
+            content.addEventListener('touchend', function() {
                 if (!dragging) return;
                 dragging = false;
                 content.classList.remove('dragging');
-
-                // 弹回原位
-                content.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                content.style.transform = 'translateY(0)';
-
-                setTimeout(function() {
-                    content.style.transition = 'none';
-                }, 600);
+                springBack();
             });
 
-            content.addEventListener('touchcancel', function(e) {
+            content.addEventListener('touchcancel', function() {
+                if (!dragging) return;
                 dragging = false;
                 content.classList.remove('dragging');
-                content.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                content.style.transform = 'translateY(0)';
-                setTimeout(function() {
-                    content.style.transition = 'none';
-                }, 600);
+                springBack();
             });
 
             function getCurrentTranslateY() {
