@@ -17,10 +17,10 @@
             height: 100vh;
             width: 100vw;
             image-rendering: -webkit-optimize-contrast;
-            color-profile: sRGB;
         }
 
-        .app-layer {
+        /* 基础层样式 */
+        .layer {
             position: fixed;
             top: 0;
             left: 0;
@@ -31,194 +31,107 @@
             background-position: center;
         }
 
-        /* 1. 侧边栏层 */
-        .sidebar-bg {
+        /* 1. 侧边栏（最底层） */
+        #side {
             background-image: url('sidebar.png');
-            z-index: 10;
+            z-index: 1;
         }
-
-        .sidebar-profile-trigger {
+        /* 侧边栏上的头像热区 */
+        .to-prof-hotspot {
             position: absolute;
             top: 40px;
             left: 0;
-            width: 300px;
+            width: 260px;
             height: 120px;
-            z-index: 20;
+            z-index: 5;
         }
 
-        /* 2. 首页主容器 */
-        .main-container {
+        /* 2. 首页（中层） */
+        #home {
             background-image: url('home.png');
-            z-index: 30;
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
-            transform: translateY(-5px); 
+            z-index: 10;
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            transform: translateY(-5px); /* 你的垂直修正量 */
         }
-
-        .main-container.open {
+        #home.open {
             transform: translateX(85vw) translateY(-5px) scale(0.94);
             border-radius: 12px;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
         }
+        /* 首页菜单热区 */
+        .menu-btn { position: absolute; top: 0; left: 0; width: 70px; height: 100px; z-index: 15; }
+        /* 侧滑后的透明遮罩 */
+        .home-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; z-index: 20; }
+        #home.open .home-overlay { display: block; }
+        /* 首页底部 TabBar 热区 */
+        .tab-box { position: absolute; bottom: 0; left: 0; width: 100%; height: 84px; display: flex; z-index: 25; }
+        .tab-btn { flex: 1; height: 100%; }
 
-        .menu-trigger {
-            position: absolute;
-            top: 0; left: 0; width: 70px; height: 100px; z-index: 40;
-        }
-
-        .close-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none; z-index: 41;
-        }
-        #app.open .close-overlay { display: block; }
-
-        /* 底部 TabBar 热区 */
-        .tab-bar-container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 84px;
-            display: flex;
-            z-index: 50;
-        }
-        .tab-item { flex: 1; height: 100%; }
-
-        /* ========================================= */
-        /* 3. 个人资料页 (水平侧滑 + 内部上下滑动) */
-        /* ========================================= */
-        .profile-layer {
+        /* 3. 个人资料页（最高层）- 水平滑进 */
+        #prof {
             background-color: #f5f5f5;
             z-index: 100;
-            /* 改回水平初始位置：在右侧隐藏 */
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.2);
-            
-            /* 允许内容上下滑动 */
-            overflow-y: scroll;
+            overflow-y: scroll; /* 允许内部上下滑动 */
             -webkit-overflow-scrolling: touch;
-            
-            /* 关键：手势由 JS 处理，禁止浏览器横向默认翻页 */
-            touch-action: pan-y; 
         }
-
-        .profile-layer.show {
-            transform: translateX(0);
-        }
-
-        .profile-img-content {
-            width: 100%;
-            height: auto;
-            display: block;
-            min-height: 100.1vh;
-        }
-
-        /* 返回热区：固定在左上角 */
-        .profile-back-trigger {
-            position: fixed;
-            top: 40px;
-            left: 0;
-            width: 80px;
-            height: 60px;
-            z-index: 110;
-        }
-
+        #prof.show { transform: translateX(0); }
+        /* 个人页内的长图 */
+        .prof-img { width: 100%; display: block; height: auto; min-height: 100.1vh; }
+        /* 固定在顶部的返回按钮 */
+        .back-btn { position: fixed; top: 40px; left: 0; width: 80px; height: 60px; z-index: 110; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar-bg app-layer">
-        <div class="sidebar-profile-trigger" id="toProfileBtn"></div>
+    <div id="side" class="layer">
+        <div class="to-prof-hotspot" onclick="showP()"></div>
     </div>
 
-    <div class="main-container app-layer" id="app">
-        <div class="menu-trigger" onclick="toggleMenu(event)"></div>
-        <div class="close-overlay" onclick="toggleMenu(event)"></div>
-
-        <div class="tab-bar-container">
-            <div class="tab-item" onclick="switchTab('home.png', event)"></div>
-            <div class="tab-item" onclick="switchTab('youjian.png', event)"></div>
-            <div class="tab-item" onclick="switchTab('wendang.png', event)"></div>
-            <div class="tab-item" onclick="switchTab('gongzuotai.png', event)"></div>
-            <div class="tab-item" onclick="switchTab('tongxunlu.png', event)"></div>
+    <div id="home" class="layer">
+        <div class="menu-btn" onclick="togM()"></div>
+        <div class="home-overlay" onclick="togM()"></div>
+        <div class="tab-box">
+            <div class="tab-btn" onclick="swT('home.png')"></div>
+            <div class="tab-btn" onclick="swT('youjian.png')"></div>
+            <div class="tab-btn" onclick="swT('wendang.png')"></div>
+            <div class="tab-btn" onclick="swT('gongzuotai.png')"></div>
+            <div class="tab-btn" onclick="swT('tongxunlu.png')"></div>
         </div>
     </div>
 
-    <div class="profile-layer app-layer" id="profilePage">
-        <div class="profile-back-trigger" id="profileBackBtn" onclick="hideProfile(event)"></div>
-        < img src="profile.png" class="profile-img-content">
+    <div id="prof" class="layer">
+        <div class="back-btn" onclick="hidP()"></div>
+        < img src="profile.png" class="prof-img">
     </div>
 
     <script>
-        const app = document.getElementById('app');
-        const profilePage = document.getElementById('profilePage');
+        const h = document.getElementById('home');
+        const p = document.getElementById('prof');
 
-        function switchTab(imgName, e) {
-            e.stopPropagation();
-            app.style.backgroundImage = `url('${imgName}')`;
-        }
+        function togM() { h.classList.toggle('open'); }
+        function showP() { p.classList.add('show'); }
+        function hidP() { p.classList.remove('show'); setTimeout(() => { p.scrollTop = 0; }, 400); }
+        function swT(img) { h.style.backgroundImage = `url('${img}')`; }
 
-        function toggleMenu(e) {
-            e.stopPropagation();
-            app.classList.toggle('open');
-        }
-
-        function showProfile() {
-            profilePage.classList.add('show');
-            profilePage.style.transform = 'translateX(0)';
-        }
-
-        function hideProfile(e) {
-            if(e) e.stopPropagation();
-            profilePage.classList.remove('show');
-            profilePage.style.transform = 'translateX(100%)';
-            setTimeout(() => { profilePage.scrollTop = 0; }, 400);
-        }
-
-        document.getElementById('toProfileBtn').addEventListener('click', showProfile);
-
-        // =========================================
-        // 水平手势：向右滑动关闭 Page 3
-        // =========================================
-        let startX = 0;
-        let currentX = 0;
-        let isMoving = false;
-
-        profilePage.addEventListener('touchstart', (e) => {
-            // 只有当在页面左侧边缘滑动时，或者整体水平滑动
-            startX = e.touches[0].clientX;
-            profilePage.style.transition = 'none';
-            isMoving = true;
+        // 水平右滑手势关闭个人页
+        let sX = 0; let cX = 0;
+        p.addEventListener('touchstart', (e) => { sX = e.touches[0].clientX; p.style.transition = 'none'; });
+        p.addEventListener('touchmove', (e) => {
+            cX = e.touches[0].clientX - sX;
+            if (cX > 0) p.style.transform = `translateX(${cX}px)`;
+        });
+        p.addEventListener('touchend', () => {
+            p.style.transition = 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1)';
+            if (cX > 120) { hidP(); p.style.transform = 'translateX(100%)'; }
+            else { p.style.transform = 'translateX(0)'; }
+            cX = 0;
         });
 
-        profilePage.addEventListener('touchmove', (e) => {
-            if (!isMoving) return;
-            const moveX = e.touches[0].clientX - startX;
-            
-            // 只有向右滑 (moveX > 0) 才触发
-            if (moveX > 0) {
-                profilePage.style.transform = `translateX(${moveX}px)`;
-                currentX = moveX;
-            }
-        });
-
-        profilePage.addEventListener('touchend', () => {
-            isMoving = false;
-            profilePage.style.transition = 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1)';
-            
-            // 滑动超过屏幕 1/3 则关闭
-            if (currentX > window.innerWidth / 3) {
-                hideProfile();
-            } else {
-                profilePage.style.transform = 'translateX(0)';
-            }
-            currentX = 0;
-        });
-
-        // 阻止系统默认行为
+        // 彻底禁止 body 穿透滚动
         document.addEventListener('touchmove', (e) => {
-            if (!profilePage.contains(e.target)) e.preventDefault();
+            if (!p.contains(e.target)) e.preventDefault();
         }, { passive: false });
     </script>
 </body>
