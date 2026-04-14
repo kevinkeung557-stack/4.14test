@@ -31,49 +31,41 @@
             background-position: center;
         }
 
-        /* 侧边栏 */
+        /* ========== 侧边栏 ========== */
         .sidebar-bg {
             background-image: url('sidebar.png');
             z-index: 10;
         }
 
+        /* 侧边栏上的头像/名字区域 — 始终在最顶层 */
         .sidebar-profile-trigger {
             position: absolute;
             top: 40px;
             left: 0;
             width: 300px;
             height: 120px;
-            z-index: 20;
+            z-index: 400;
+            cursor: pointer;
         }
 
-        /* 消息页（首页） */
+        /* ========== 首页（消息页） ========== */
         .main-container {
             background-image: url('home.png');
             z-index: 30;
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s, opacity 0.3s;
             transform: translateY(-5px);
-            opacity: 0;  /* 默认透明，让点击穿透到侧边栏 */
-            pointer-events: none;  /* 阻止点击穿透后误触发 */
         }
 
-        /* 侧边栏打开时，首页才变为不透明且可交互 */
         .main-container.open {
             transform: translateX(85vw) translateY(-5px) scale(0.94);
             border-radius: 12px;
-            opacity: 1;
-            pointer-events: auto;
         }
 
-        .menu-trigger {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 70px;
-            height: 100px;
-            z-index: 45;  /* 比首页高，确保打开时也能点到三横线 */
-            pointer-events: auto;  /* 菜单按钮始终可点 */
+        .main-container,
+        .main-container.open {
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s;
         }
 
+        /* 关闭遮罩 — 侧边栏打开时覆盖首页，点一下关闭侧边栏 */
         .close-overlay {
             position: absolute;
             top: 0;
@@ -87,7 +79,18 @@
             display: block;
         }
 
-        /* 底部 Tab 栏 */
+        /* ========== 汉堡菜单按钮 — 独立于首页，永远可点击 ========== */
+        .menu-trigger {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 70px;
+            height: 100px;
+            z-index: 500;
+            cursor: pointer;
+        }
+
+        /* ========== 底部 Tab 栏 ========== */
         .tab-bar {
             position: fixed;
             bottom: 0;
@@ -106,7 +109,7 @@
             cursor: pointer;
         }
 
-        /* 频道页面 */
+        /* ========== 频道页面 ========== */
         .page-layer {
             position: fixed;
             top: 0;
@@ -133,7 +136,7 @@
         .gongzuotai-layer { background-image: url('gongzuotai.png'); }
         .tongxunlu-layer  { background-image: url('tongxunlu.png'); }
 
-        /* 个人资料页 */
+        /* ========== 个人资料页 ========== */
         .profile-layer {
             z-index: 100;
             visibility: hidden;
@@ -147,17 +150,7 @@
             pointer-events: auto;
         }
 
-        .profile-back-trigger {
-            position: absolute;
-            top: 40px;
-            left: 0;
-            width: 80px;
-            height: 60px;
-            z-index: 110;
-            cursor: pointer;
-        }
-
-        /* 内容层：背景图 + 触摸事件都在这里 */
+        /* 内容层：背景图 + 橡皮筋触摸 */
         .profile-content {
             position: absolute;
             top: 0;
@@ -169,11 +162,16 @@
             background-repeat: no-repeat;
             background-position: center;
             touch-action: pan-y;
-            cursor: grab;
         }
 
-        .profile-content.dragging {
-            cursor: grabbing;
+        .profile-back-trigger {
+            position: absolute;
+            top: 40px;
+            left: 0;
+            width: 80px;
+            height: 60px;
+            z-index: 110;
+            cursor: pointer;
         }
 
     </style>
@@ -185,11 +183,13 @@
         <div class="sidebar-profile-trigger" onclick="showProfile(event)"></div>
     </div>
 
-    <!-- 消息页（首页） -->
+    <!-- 首页（消息页） -->
     <div class="main-container app-layer" id="app">
-        <div class="menu-trigger" onclick="toggleMenu(event)"></div>
-        <div class="close-overlay" onclick="toggleMenu(event)"></div>
+        <div class="close-overlay" onclick="closeSidebar()"></div>
     </div>
+
+    <!-- 汉堡菜单按钮 — 独立于首页，永远在最上层 -->
+    <div class="menu-trigger" onclick="toggleSidebar()"></div>
 
     <!-- 底部 Tab -->
     <div class="tab-bar">
@@ -219,23 +219,38 @@
     </div>
 
     <script>
-        function toggleMenu(e) {
-            e.stopPropagation();
+        /* 侧边栏切换 */
+        function toggleSidebar() {
             document.getElementById('app').classList.toggle('open');
         }
 
-        function switchTab(tab) {
+        function closeSidebar() {
             document.getElementById('app').classList.remove('open');
+        }
+
+        /* Tab 切换 */
+        function switchTab(tab) {
+            // 关闭侧边栏
+            document.getElementById('app').classList.remove('open');
+
+            // 隐藏所有频道页
             document.querySelectorAll('.page-layer').forEach(el => el.classList.remove('show'));
+
+            // 取消所有 Tab 高亮
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            // 显示对应页面
             if (tab !== 'home') {
-                const pageEl = document.getElementById('page' + tab.charAt(0).toUpperCase() + tab.slice(1));
+                var pageEl = document.getElementById('page' + tab.charAt(0).toUpperCase() + tab.slice(1));
                 if (pageEl) pageEl.classList.add('show');
             }
-            const tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+
+            // 高亮当前 Tab
+            var tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
             if (tabEl) tabEl.classList.add('active');
         }
 
+        /* 个人资料页 */
         function showProfile(e) {
             e.stopPropagation();
             document.getElementById('profilePage').classList.add('show');
@@ -247,34 +262,29 @@
         }
 
         /* ========================================= */
-        /* 橡皮筋弹性滑动 */
+        /* 橡皮筋弹性滑动（个人资料页） */
         /* ========================================= */
         (function() {
-            const content = document.getElementById('profileContent');
-
-            let startY = 0;
-            let startTranslateY = 0;
-            let distY = 0;
-            let dragging = false;
-            const RESISTANCE = 0.4;
-            const MAX_DRAG = 120;
+            var content = document.getElementById('profileContent');
+            var startY = 0;
+            var startTranslateY = 0;
+            var distY = 0;
+            var dragging = false;
+            var RESISTANCE = 0.4;
+            var MAX_DRAG = 120;
 
             content.addEventListener('touchstart', function(e) {
                 dragging = true;
                 startY = e.touches[0].clientY;
                 startTranslateY = getCurrentTranslateY();
                 content.style.transition = 'none';
-                content.classList.add('dragging');
             }, { passive: true });
 
             content.addEventListener('touchmove', function(e) {
                 if (!dragging) return;
                 e.preventDefault();
-
                 distY = e.touches[0].clientY - startY;
-
-                // 阻力：实际拉动距离 * RESISTANCE，上限 MAX_DRAG
-                const offset = Math.sign(distY) * Math.min(Math.abs(distY) * RESISTANCE, MAX_DRAG);
+                var offset = Math.sign(distY) * Math.min(Math.abs(distY) * RESISTANCE, MAX_DRAG);
                 content.style.transform = 'translateY(' + (startTranslateY + offset) + 'px)';
             }, { passive: false });
 
@@ -289,27 +299,25 @@
             content.addEventListener('touchend', function() {
                 if (!dragging) return;
                 dragging = false;
-                content.classList.remove('dragging');
                 springBack();
             });
 
             content.addEventListener('touchcancel', function() {
                 if (!dragging) return;
                 dragging = false;
-                content.classList.remove('dragging');
                 springBack();
             });
 
             function getCurrentTranslateY() {
-                const m = window.getComputedStyle(content).transform;
+                var m = window.getComputedStyle(content).transform;
                 if (m === 'none') return 0;
-                const parts = m.split(',');
+                var parts = m.split(',');
                 return parseFloat(parts[5]) || 0;
             }
         })();
 
+        /* 全局禁止弹性滚动 */
         document.addEventListener('touchmove', function(e) {
-            // 仅当 profilePage 可见时阻止默认滚动
             var profile = document.getElementById('profilePage');
             if (!profile.classList.contains('show')) return;
             e.preventDefault();
