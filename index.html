@@ -58,6 +58,13 @@
             z-index: 500;
             background: transparent; border: none; cursor: pointer;
         }
+        /* profile 打开时隐藏汉堡菜单 */
+        body.profile-open #menuBtn {
+            display: none;
+        }
+        body.profile-open #profileHotspot {
+            display: none;
+        }
 
         /* 侧边栏头像/名字 */
         #profileHotspot {
@@ -183,6 +190,7 @@
             closeMask.style.display = 'none';
             profileLayer.classList.add('show');
             profileBack.classList.add('show');
+            document.body.classList.add('profile-open');
         });
 
         /* 关闭个人资料 */
@@ -191,6 +199,7 @@
             console.log('back clicked');
             profileLayer.classList.remove('show');
             profileBack.classList.remove('show');
+            document.body.classList.remove('profile-open');
         });
 
         /* Tab 切换 */
