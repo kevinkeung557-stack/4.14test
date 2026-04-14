@@ -51,7 +51,6 @@
             background-image: url('home.png');
             z-index: 30;
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
             transform: translateY(-5px);
         }
 
@@ -82,14 +81,14 @@
             display: block;
         }
 
-        /* 底部 Tab 栏 */
+        /* 底部 Tab 栏 — 放在最顶层，保证始终可点击 */
         .tab-bar {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100vw;
             height: 68px;
-            z-index: 50;
+            z-index: 200;
             display: flex;
         }
 
@@ -101,16 +100,26 @@
             cursor: pointer;
         }
 
-        /* 频道页面 */
+        /* 频道页面 — 无动画、无阴影、直接显示 */
         .page-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            background-position: center;
             z-index: 60;
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.3);
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
         }
 
         .page-layer.show {
-            transform: translateX(0);
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .youjian-layer    { background-image: url('youjian.png'); }
@@ -124,7 +133,6 @@
             z-index: 100;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            box-shadow: -10px 0 30px rgba(0,0,0,0.3);
         }
 
         .profile-layer.show {
@@ -156,26 +164,26 @@
         <div class="close-overlay" onclick="toggleMenu(event)"></div>
     </div>
 
-    <!-- 底部 Tab：消息 / 邮件 / 文档 / 工作台 / 通讯录 -->
+    <!-- 底部 Tab -->
     <div class="tab-bar">
-        <button class="tab-btn active" onclick="switchTab('home')"></button>
-        <button class="tab-btn" onclick="switchTab('youjian')"></button>
-        <button class="tab-btn" onclick="switchTab('wendang')"></button>
-        <button class="tab-btn" onclick="switchTab('gongzuotai')"></button>
-        <button class="tab-btn" onclick="switchTab('tongxunlu')"></button>
+        <button class="tab-btn active" id="tabHome" onclick="switchTab('home')"></button>
+        <button class="tab-btn" id="tabYoujian" onclick="switchTab('youjian')"></button>
+        <button class="tab-btn" id="tabWendang" onclick="switchTab('wendang')"></button>
+        <button class="tab-btn" id="tabGongzuotai" onclick="switchTab('gongzuotai')"></button>
+        <button class="tab-btn" id="tabTongxunlu" onclick="switchTab('tongxunlu')"></button>
     </div>
 
     <!-- 邮件页 -->
-    <div class="page-layer youjian-layer app-layer" id="pageYoujian"></div>
+    <div class="page-layer youjian-layer" id="pageYoujian"></div>
 
     <!-- 文档页 -->
-    <div class="page-layer wendang-layer app-layer" id="pageWendang"></div>
+    <div class="page-layer wendang-layer" id="pageWendang"></div>
 
     <!-- 工作台页 -->
-    <div class="page-layer gongzuotai-layer app-layer" id="pageGongzuotai"></div>
+    <div class="page-layer gongzuotai-layer" id="pageGongzuotai"></div>
 
     <!-- 通讯录页 -->
-    <div class="page-layer tongxunlu-layer app-layer" id="pageTongxunlu"></div>
+    <div class="page-layer tongxunlu-layer" id="pageTongxunlu"></div>
 
     <!-- 个人资料页 -->
     <div class="profile-layer app-layer" id="profilePage">
@@ -198,15 +206,17 @@
             // 取消所有 Tab 高亮
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
-            // 如果不是首页，显示对应频道页
+            // 显示对应页面（不是首页的话）
             if (tab !== 'home') {
-                const pageEl = document.getElementById('page' + tab.charAt(0).toUpperCase() + tab.slice(1));
+                const pageId = 'page' + tab.charAt(0).toUpperCase() + tab.slice(1);
+                const pageEl = document.getElementById(pageId);
                 if (pageEl) pageEl.classList.add('show');
             }
 
             // 高亮当前 Tab
-            const btn = document.querySelector('.tab-btn[onclick="switchTab(\'' + tab + '\')"]');
-            if (btn) btn.classList.add('active');
+            const tabId = 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1);
+            const tabEl = document.getElementById(tabId);
+            if (tabEl) tabEl.classList.add('active');
         }
 
         function showProfile(e) {
