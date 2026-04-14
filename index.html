@@ -133,10 +133,13 @@
             z-index: 100;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            /* 初始隐藏（visibility 配合 transform） */
+            visibility: hidden;
         }
 
         .profile-layer.show {
             transform: translateX(0);
+            visibility: visible;
         }
 
         .profile-back-trigger {
@@ -232,6 +235,67 @@
         document.addEventListener('touchmove', function(e) {
             e.preventDefault();
         }, { passive: false });
+
+        /* ========================================= */
+        /* 橡皮筋弹性滑动（个人资料页） */
+        /* ========================================= */
+        (function() {
+            var el = document.getElementById('profilePage');
+            var startY = 0;
+            var startX = 0;
+            var distY = 0;
+            var distX = 0;
+            var dragging = false;
+            var R = 0.4;        // 阻力系数
+            var MAX = 120;      // 最大拉伸 px
+
+            el.addEventListener('touchstart', function(e) {
+                dragging = true;
+                startY = e.touches[0].clientY;
+                startX = e.touches[0].clientX;
+                // 记住当前 transform（可能是 translateX(0)）
+                el.style.transition = 'none';
+            }, { passive: true });
+
+            el.addEventListener('touchmove', function(e) {
+                if (!dragging) return;
+                e.preventDefault();
+
+                distY = e.touches[0].clientY - startY;
+                distX = e.touches[0].clientX - startX;
+
+                // 垂直滑动为主时才处理
+                if (Math.abs(distY) <= Math.abs(distX)) return;
+
+                // 橡皮筋：超出边界的阻力效果
+                var resisted = distY * R;
+                if (resisted > MAX)  resisted = MAX + (resisted - MAX) * 0.1;
+                if (resisted < -MAX) resisted = -MAX + (resisted + MAX) * 0.1;
+
+                // 在当前位置上叠加垂直偏移
+                el.style.transform = 'translateX(0) translateY(' + resisted + 'px)';
+            }, { passive: false });
+
+            function springBack() {
+                el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                el.style.transform = 'translateX(0) translateY(0)';
+                setTimeout(function() {
+                    el.style.transition = 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1)';
+                }, 600);
+            }
+
+            el.addEventListener('touchend', function() {
+                if (!dragging) return;
+                dragging = false;
+                springBack();
+            });
+
+            el.addEventListener('touchcancel', function() {
+                if (!dragging) return;
+                dragging = false;
+                springBack();
+            });
+        })();
     </script>
 </body>
 </html>
