@@ -59,13 +59,14 @@
             border-radius: 12px;
         }
 
+        /* 汉堡菜单按钮 — 独立于 main-container */
         .menu-trigger {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 70px;
             height: 100px;
-            z-index: 40;
+            z-index: 250;
         }
 
         .close-overlay {
@@ -133,23 +134,31 @@
             z-index: 100;
             transform: translateX(100%);
             transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-            /* 初始隐藏（visibility 配合 transform） */
             visibility: hidden;
+            pointer-events: none;
         }
 
         .profile-layer.show {
             transform: translateX(0);
             visibility: visible;
+            pointer-events: auto;
         }
 
+        /* 返回按钮 — 独立于 profilePage */
         .profile-back-trigger {
-            position: absolute;
-            top: 40px;
+            position: fixed;
+            top: 0;
             left: 0;
-            width: 80px;
-            height: 60px;
-            z-index: 110;
+            width: 100vw;
+            height: 100vh;
+            z-index: 300;
             cursor: pointer;
+            display: none;
+            pointer-events: none;
+        }
+        .profile-back-trigger.show {
+            display: block;
+            pointer-events: auto;
         }
 
     </style>
@@ -163,9 +172,11 @@
 
     <!-- 消息页（首页） -->
     <div class="main-container app-layer" id="app">
-        <div class="menu-trigger" onclick="toggleMenu(event)"></div>
         <div class="close-overlay" onclick="toggleMenu(event)"></div>
     </div>
+
+    <!-- 汉堡菜单按钮 — 独立于 app，避免层叠上下文限制 -->
+    <div class="menu-trigger" onclick="toggleMenu(event)"></div>
 
     <!-- 底部 Tab -->
     <div class="tab-bar">
@@ -190,8 +201,9 @@
 
     <!-- 个人资料页 -->
     <div class="profile-layer app-layer" id="profilePage">
-        <div class="profile-back-trigger" onclick="hideProfile(event)"></div>
     </div>
+    <!-- 返回按钮 — 独立于 profilePage -->
+    <div class="profile-back-trigger" onclick="hideProfile(event)"></div>
 
     <script>
         function toggleMenu(e) {
@@ -225,11 +237,18 @@
         function showProfile(e) {
             e.stopPropagation();
             document.getElementById('profilePage').classList.add('show');
+            document.getElementById('profilePage').style.visibility = 'visible';
+            document.querySelector('.profile-back-trigger').classList.add('show');
         }
 
         function hideProfile(e) {
             e.stopPropagation();
             document.getElementById('profilePage').classList.remove('show');
+            document.querySelector('.profile-back-trigger').classList.remove('show');
+            // 等待 0.4s 滑出动画完成后再隐藏
+            setTimeout(function() {
+                document.getElementById('profilePage').style.visibility = 'hidden';
+            }, 420);
         }
 
         document.addEventListener('touchmove', function(e) {
@@ -237,63 +256,79 @@
         }, { passive: false });
 
         /* ========================================= */
-        /* 橡皮筋弹性滑动（个人资料页） */
+        /* 橡皮筋弹性滑动 — 所有页面统一处理 */
         /* ========================================= */
         (function() {
-            var el = document.getElementById('profilePage');
-            var startY = 0;
-            var startX = 0;
-            var distY = 0;
-            var distX = 0;
-            var dragging = false;
-            var R = 0.04;       // 阻力系数（1/10）
-            var MAX = 12;       // 最大拉伸 12px
+            var R = 0.08;
+            var MAX = 12;
 
-            el.addEventListener('touchstart', function(e) {
-                dragging = true;
-                startY = e.touches[0].clientY;
-                startX = e.touches[0].clientX;
-                // 记住当前 transform（可能是 translateX(0)）
-                el.style.transition = 'none';
-            }, { passive: true });
+            // 需要橡皮筋效果的页面 ID 列表
+            var pages = ['app', 'pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu', 'profilePage'];
 
-            el.addEventListener('touchmove', function(e) {
-                if (!dragging) return;
-                e.preventDefault();
+            pages.forEach(function(pageId) {
+                var el = document.getElementById(pageId);
+                if (!el) return;
 
-                distY = e.touches[0].clientY - startY;
-                distX = e.touches[0].clientX - startX;
+                var startY = 0;
+                var startX = 0;
+                var dragging = false;
+                var baseTX = 0;   // touchstart 时的 translateX
+                var baseTY = 0;   // touchstart 时的 translateY
 
-                // 垂直滑动为主时才处理
-                if (Math.abs(distY) <= Math.abs(distX)) return;
+                // 从 matrix 解析出当前 translateX 和 translateY
+                function parseMatrix(el) {
+                    var m = window.getComputedStyle(el).transform;
+                    if (m === 'none') return { tx: 0, ty: 0 };
+                    var parts = m.split(',');
+                    return {
+                        tx: parseFloat(parts[4]) || 0,
+                        ty: parseFloat(parts[5]) || 0
+                    };
+                }
 
-                // 橡皮筋：超出边界的阻力效果
-                var resisted = distY * R;
-                if (resisted > MAX)  resisted = MAX + (resisted - MAX) * 0.1;
-                if (resisted < -MAX) resisted = -MAX + (resisted + MAX) * 0.1;
+                el.addEventListener('touchstart', function(e) {
+                    dragging = true;
+                    startY = e.touches[0].clientY;
+                    startX = e.touches[0].clientX;
+                    var p = parseMatrix(el);
+                    baseTX = p.tx;
+                    baseTY = p.ty;
+                    el.style.transition = 'none';
+                }, { passive: true });
 
-                // 在当前位置上叠加垂直偏移
-                el.style.transform = 'translateX(0) translateY(' + resisted + 'px)';
-            }, { passive: false });
+                el.addEventListener('touchmove', function(e) {
+                    if (!dragging) return;
+                    e.preventDefault();
 
-            function springBack() {
-                el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                el.style.transform = 'translateX(0) translateY(0)';
-                setTimeout(function() {
-                    el.style.transition = 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1)';
-                }, 600);
-            }
+                    var distY = e.touches[0].clientY - startY;
+                    var distX = e.touches[0].clientX - startX;
 
-            el.addEventListener('touchend', function() {
-                if (!dragging) return;
-                dragging = false;
-                springBack();
-            });
+                    // 垂直滑动幅度 >= 水平幅度才触发
+                    if (Math.abs(distY) < Math.abs(distX)) return;
 
-            el.addEventListener('touchcancel', function() {
-                if (!dragging) return;
-                dragging = false;
-                springBack();
+                    var resisted = distY * R;
+                    if (resisted > MAX)  resisted = MAX + (resisted - MAX) * 0.1;
+                    if (resisted < -MAX) resisted = -MAX + (resisted + MAX) * 0.1;
+
+                    el.style.transform = 'translateX(' + baseTX + 'px) translateY(' + (baseTY + resisted) + 'px)';
+                }, { passive: false });
+
+                function springBack() {
+                    el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    el.style.transform = 'translateX(' + baseTX + 'px) translateY(' + baseTY + 'px)';
+                    // 恢复各页面原本的 transition
+                    var originalTransition = pageId === 'app'
+                        ? 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s'
+                        : pageId === 'profilePage'
+                        ? 'transform 0.4s cubic-bezier(0.19, 1, 0.22, 1)'
+                        : '';
+                    setTimeout(function() {
+                        if (originalTransition) el.style.transition = originalTransition;
+                    }, 600);
+                }
+
+                el.addEventListener('touchend',   function() { if (dragging) { dragging = false; springBack(); } });
+                el.addEventListener('touchcancel', function() { if (dragging) { dragging = false; springBack(); } });
             });
         })();
     </script>
