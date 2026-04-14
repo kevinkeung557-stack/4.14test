@@ -32,16 +32,17 @@
         /* 侧边栏 */
         .sidebar-bg {
             background-image: url('sidebar.png');
-            z-index: 10;
+            z-index: 25;
         }
 
+        /* 侧边栏头像热区 — 独立于 sidebar stacking context */
         .sidebar-profile-trigger {
-            position: absolute;
+            position: fixed;
             top: 40px;
             left: 0;
             width: 300px;
             height: 120px;
-            z-index: 20;
+            z-index: 26;
             cursor: pointer;
         }
 
@@ -65,7 +66,7 @@
             left: 0;
             width: 90px;
             height: 120px;
-            z-index: 300;
+            z-index: 500;
             cursor: pointer;
         }
 
@@ -168,9 +169,10 @@
 <body>
 
     <!-- 侧边栏 -->
-    <div class="sidebar-bg app-layer">
-        <div class="sidebar-profile-trigger"></div>
-    </div>
+    <div class="sidebar-bg app-layer" id="sidebar"></div>
+
+    <!-- 侧边栏头像热区 — 独立于 sidebar stacking context -->
+    <div class="sidebar-profile-trigger" id="sidebarProfile"></div>
 
     <!-- 首页 -->
     <div class="main-container app-layer" id="app">
@@ -219,6 +221,14 @@
         /* 打开/关闭侧边栏 */
         function toggleSidebar(e) {
             if (e) e.stopPropagation();
+            // 打开侧边栏时先关闭所有 tab 页面
+            if (!app.classList.contains('open')) {
+                ['pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu'].forEach(function(id) {
+                    document.getElementById(id).classList.remove('show');
+                });
+                document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
+                document.getElementById('tabHome').classList.add('active');
+            }
             app.classList.toggle('open');
         }
 
@@ -239,13 +249,18 @@
         function showProfile(e) {
             if (e) e.stopPropagation();
             closeSidebar();
+            // 打开 profile 时先关闭所有 tab 页面
+            ['pageYoujian', 'pageWendang', 'pageGongzuotai', 'pageTongxunlu'].forEach(function(id) {
+                document.getElementById(id).classList.remove('show');
+            });
+            document.querySelectorAll('.tab-btn').forEach(function(btn) { btn.classList.remove('active'); });
             profilePage.classList.add('show');
             profileBackBtn.classList.add('show');
             profilePage.style.visibility = 'visible';
         }
 
-        sidebarProfile.addEventListener('click', showProfile);
-        sidebarProfile.addEventListener('touchstart', function(e) {
+        document.getElementById('sidebarProfile').addEventListener('click', showProfile);
+        document.getElementById('sidebarProfile').addEventListener('touchstart', function(e) {
             e.preventDefault();
             showProfile();
         }, { passive: false });
