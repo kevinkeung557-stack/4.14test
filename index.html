@@ -246,8 +246,8 @@
             var distY = 0;
             var distX = 0;
             var dragging = false;
-            var R = 0.4;        // 阻力系数
-            var MAX = 120;      // 最大拉伸 px
+            var R = 0.04;       // 阻力系数（1/10）
+            var MAX = 12;       // 最大拉伸 12px
 
             el.addEventListener('touchstart', function(e) {
                 dragging = true;
