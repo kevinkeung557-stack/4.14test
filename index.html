@@ -20,7 +20,10 @@
             color-profile: sRGB;
         }
 
-        .app-layer {
+        /* ============================================= */
+        /* 所有层的公共样式 */
+        /* ============================================= */
+        .layer {
             position: fixed;
             top: 0;
             left: 0;
@@ -31,66 +34,64 @@
             background-position: center;
         }
 
-        /* ========== 侧边栏 ========== */
-        .sidebar-bg {
+        /* ============================================= */
+        /* 1. 侧边栏（最底层，z-index 10）*/
+        /* ============================================= */
+        .layer-sidebar {
             background-image: url('sidebar.png');
             z-index: 10;
         }
 
-        /* 侧边栏上的头像/名字区域 — 始终在最顶层 */
-        .sidebar-profile-trigger {
-            position: absolute;
+        /* 侧边栏上的头像/名字热区（永远可点击） */
+        .hotspot-profile {
+            position: fixed;
             top: 40px;
             left: 0;
-            width: 300px;
+            width: 280px;
             height: 120px;
             z-index: 400;
-            cursor: pointer;
         }
 
-        /* ========== 首页（消息页） ========== */
-        .main-container {
+        /* ============================================= */
+        /* 2. 首页消息页（z-index 30）*/
+        /* ============================================= */
+        .layer-home {
             background-image: url('home.png');
             z-index: 30;
             transform: translateY(-5px);
+            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s;
         }
 
-        .main-container.open {
+        .layer-home.open {
             transform: translateX(85vw) translateY(-5px) scale(0.94);
             border-radius: 12px;
         }
 
-        .main-container,
-        .main-container.open {
-            transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1), border-radius 0.4s;
-        }
-
-        /* 关闭遮罩 — 侧边栏打开时覆盖首页，点一下关闭侧边栏 */
-        .close-overlay {
-            position: absolute;
+        /* 点击首页可见区域 → 关闭侧边栏 */
+        .hotspot-close-sidebar {
+            position: fixed;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
+            left: 15vw;  /* 只在右侧15%区域响应（左侧保留给三横线按钮）*/
+            width: 85vw;
+            height: 100vh;
             z-index: 41;
         }
-        .main-container.open .close-overlay {
-            display: block;
-        }
 
-        /* ========== 汉堡菜单按钮 — 独立于首页，永远可点击 ========== */
-        .menu-trigger {
+        /* ============================================= */
+        /* 3. 三横线汉堡菜单按钮（独立层，永远可点击）*/
+        /* ============================================= */
+        .hotspot-menu {
             position: fixed;
             top: 0;
             left: 0;
             width: 70px;
             height: 100px;
             z-index: 500;
-            cursor: pointer;
         }
 
-        /* ========== 底部 Tab 栏 ========== */
+        /* ============================================= */
+        /* 4. 底部 Tab 栏 */
+        /* ============================================= */
         .tab-bar {
             position: fixed;
             bottom: 0;
@@ -109,54 +110,51 @@
             cursor: pointer;
         }
 
-        /* ========== 频道页面 ========== */
-        .page-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            background-position: center;
+        /* ============================================= */
+        /* 5. 四个频道页面（无动画，直接显示）*/
+        /* ============================================= */
+        .layer-page {
             z-index: 60;
+            /* 默认隐藏 */
             visibility: hidden;
             opacity: 0;
             pointer-events: none;
         }
 
-        .page-layer.show {
+        .layer-page.show {
             visibility: visible;
             opacity: 1;
             pointer-events: auto;
         }
 
-        .youjian-layer    { background-image: url('youjian.png'); }
-        .wendang-layer    { background-image: url('wendang.png'); }
-        .gongzuotai-layer { background-image: url('gongzuotai.png'); }
-        .tongxunlu-layer  { background-image: url('tongxunlu.png'); }
+        .layer-page-yj    { background-image: url('youjian.png'); }
+        .layer-page-wd    { background-image: url('wendang.png'); }
+        .layer-page-gzt   { background-image: url('gongzuotai.png'); }
+        .layer-page-txl   { background-image: url('tongxunlu.png'); }
 
-        /* ========== 个人资料页 ========== */
-        .profile-layer {
+        /* ============================================= */
+        /* 6. 个人资料页 */
+        /* ============================================= */
+        .layer-profile {
             z-index: 100;
             visibility: hidden;
             opacity: 0;
             pointer-events: none;
         }
 
-        .profile-layer.show {
+        .layer-profile.show {
             visibility: visible;
             opacity: 1;
             pointer-events: auto;
         }
 
-        /* 内容层：背景图 + 橡皮筋触摸 */
+        /* 个人资料页的背景图（在 content 上，不在 layer 上）*/
         .profile-content {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background-image: url('profile.png');
             background-size: 100% 100%;
             background-repeat: no-repeat;
@@ -164,163 +162,178 @@
             touch-action: pan-y;
         }
 
-        .profile-back-trigger {
-            position: absolute;
+        /* 返回按钮 */
+        .profile-back {
+            position: fixed;
             top: 40px;
             left: 0;
             width: 80px;
             height: 60px;
             z-index: 110;
-            cursor: pointer;
         }
 
     </style>
 </head>
 <body>
 
-    <!-- 侧边栏 -->
-    <div class="sidebar-bg app-layer">
-        <div class="sidebar-profile-trigger" onclick="showProfile(event)"></div>
+    <!-- 1. 侧边栏 -->
+    <div class="layer layer-sidebar" id="sidebar"></div>
+
+    <!-- 侧边栏头像名字热区（独立于sidebar，始终可点击）-->
+    <div class="hotspot-profile" id="hotProfile"></div>
+
+    <!-- 2. 首页消息页 -->
+    <div class="layer layer-home" id="homePage">
+        <!-- 点击首页右侧区域关闭侧边栏 -->
+        <div class="hotspot-close-sidebar" id="hotCloseSidebar"></div>
     </div>
 
-    <!-- 首页（消息页） -->
-    <div class="main-container app-layer" id="app">
-        <div class="close-overlay" onclick="closeSidebar()"></div>
-    </div>
+    <!-- 3. 汉堡菜单按钮 -->
+    <div class="hotspot-menu" id="hotMenu"></div>
 
-    <!-- 汉堡菜单按钮 — 独立于首页，永远在最上层 -->
-    <div class="menu-trigger" onclick="toggleSidebar()"></div>
-
-    <!-- 底部 Tab -->
+    <!-- 4. 底部 Tab -->
     <div class="tab-bar">
-        <button class="tab-btn active" id="tabHome" onclick="switchTab('home')"></button>
-        <button class="tab-btn" id="tabYoujian" onclick="switchTab('youjian')"></button>
-        <button class="tab-btn" id="tabWendang" onclick="switchTab('wendang')"></button>
-        <button class="tab-btn" id="tabGongzuotai" onclick="switchTab('gongzuotai')"></button>
-        <button class="tab-btn" id="tabTongxunlu" onclick="switchTab('tongxunlu')"></button>
+        <button class="tab-btn active" id="btnHome"></button>
+        <button class="tab-btn" id="btnYj"></button>
+        <button class="tab-btn" id="btnWd"></button>
+        <button class="tab-btn" id="btnGzt"></button>
+        <button class="tab-btn" id="btnTxl"></button>
     </div>
 
-    <!-- 邮件页 -->
-    <div class="page-layer youjian-layer" id="pageYoujian"></div>
+    <!-- 5. 四个频道页面 -->
+    <div class="layer layer-page layer-page-yj" id="pageYj"></div>
+    <div class="layer layer-page layer-page-wd" id="pageWd"></div>
+    <div class="layer layer-page layer-page-gzt" id="pageGzt"></div>
+    <div class="layer layer-page layer-page-txl" id="pageTxl"></div>
 
-    <!-- 文档页 -->
-    <div class="page-layer wendang-layer" id="pageWendang"></div>
-
-    <!-- 工作台页 -->
-    <div class="page-layer gongzuotai-layer" id="pageGongzuotai"></div>
-
-    <!-- 通讯录页 -->
-    <div class="page-layer tongxunlu-layer" id="pageTongxunlu"></div>
-
-    <!-- 个人资料页 -->
-    <div class="profile-layer" id="profilePage">
+    <!-- 6. 个人资料页 -->
+    <div class="layer layer-profile" id="profilePage">
         <div class="profile-content" id="profileContent"></div>
-        <div class="profile-back-trigger" onclick="hideProfile(event)"></div>
+        <div class="profile-back" id="profileBack"></div>
     </div>
 
     <script>
-        /* 侧边栏切换 */
-        function toggleSidebar() {
-            document.getElementById('app').classList.toggle('open');
-        }
+        /* ===================== */
+        /* 侧边栏 */
+        /* ===================== */
+        document.getElementById('hotMenu').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('homePage').classList.toggle('open');
+        });
 
-        function closeSidebar() {
-            document.getElementById('app').classList.remove('open');
-        }
+        document.getElementById('hotCloseSidebar').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('homePage').classList.remove('open');
+        });
 
-        /* Tab 切换 */
-        function switchTab(tab) {
-            // 关闭侧边栏
-            document.getElementById('app').classList.remove('open');
-
-            // 隐藏所有频道页
-            document.querySelectorAll('.page-layer').forEach(el => el.classList.remove('show'));
-
-            // 取消所有 Tab 高亮
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-
-            // 显示对应页面
-            if (tab !== 'home') {
-                var pageEl = document.getElementById('page' + tab.charAt(0).toUpperCase() + tab.slice(1));
-                if (pageEl) pageEl.classList.add('show');
-            }
-
-            // 高亮当前 Tab
-            var tabEl = document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1));
-            if (tabEl) tabEl.classList.add('active');
-        }
-
-        /* 个人资料页 */
-        function showProfile(e) {
+        /* ===================== */
+        /* 打开个人资料页 */
+        /* ===================== */
+        document.getElementById('hotProfile').addEventListener('click', function(e) {
             e.stopPropagation();
             document.getElementById('profilePage').classList.add('show');
-        }
+        });
 
-        function hideProfile(e) {
+        /* ===================== */
+        /* 关闭个人资料页 */
+        /* ===================== */
+        document.getElementById('profileBack').addEventListener('click', function(e) {
             e.stopPropagation();
             document.getElementById('profilePage').classList.remove('show');
+        });
+
+        /* ===================== */
+        /* Tab 切换 */
+        /* ===================== */
+        function switchTab(tab) {
+            // 关闭侧边栏
+            document.getElementById('homePage').classList.remove('open');
+
+            // 隐藏所有频道页
+            document.getElementById('pageYj').classList.remove('show');
+            document.getElementById('pageWd').classList.remove('show');
+            document.getElementById('pageGzt').classList.remove('show');
+            document.getElementById('pageTxl').classList.remove('show');
+
+            // 取消所有 Tab 高亮
+            document.getElementById('btnHome').classList.remove('active');
+            document.getElementById('btnYj').classList.remove('active');
+            document.getElementById('btnWd').classList.remove('active');
+            document.getElementById('btnGzt').classList.remove('active');
+            document.getElementById('btnTxl').classList.remove('active');
+
+            // 显示对应页面
+            if (tab === 'yj')    { document.getElementById('pageYj').classList.add('show');  document.getElementById('btnYj').classList.add('active'); }
+            else if (tab === 'wd')  { document.getElementById('pageWd').classList.add('show');  document.getElementById('btnWd').classList.add('active'); }
+            else if (tab === 'gzt') { document.getElementById('pageGzt').classList.add('show'); document.getElementById('btnGzt').classList.add('active'); }
+            else if (tab === 'txl') { document.getElementById('pageTxl').classList.add('show'); document.getElementById('btnTxl').classList.add('active'); }
+            else                     { document.getElementById('btnHome').classList.add('active'); } // home
         }
 
-        /* ========================================= */
+        document.getElementById('btnHome').addEventListener('click', function() { switchTab('home'); });
+        document.getElementById('btnYj').addEventListener('click',  function() { switchTab('yj'); });
+        document.getElementById('btnWd').addEventListener('click',  function() { switchTab('wd'); });
+        document.getElementById('btnGzt').addEventListener('click', function() { switchTab('gzt'); });
+        document.getElementById('btnTxl').addEventListener('click', function() { switchTab('txl'); });
+
+        /* ===================== */
         /* 橡皮筋弹性滑动（个人资料页） */
-        /* ========================================= */
+        /* ===================== */
         (function() {
-            var content = document.getElementById('profileContent');
+            var el = document.getElementById('profileContent');
             var startY = 0;
-            var startTranslateY = 0;
-            var distY = 0;
+            var baseY = 0;
             var dragging = false;
             var RESISTANCE = 0.4;
             var MAX_DRAG = 120;
 
-            content.addEventListener('touchstart', function(e) {
+            el.addEventListener('touchstart', function(e) {
                 dragging = true;
                 startY = e.touches[0].clientY;
-                startTranslateY = getCurrentTranslateY();
-                content.style.transition = 'none';
+                baseY = getCurrentY();
+                el.style.transition = 'none';
             }, { passive: true });
 
-            content.addEventListener('touchmove', function(e) {
+            el.addEventListener('touchmove', function(e) {
                 if (!dragging) return;
                 e.preventDefault();
-                distY = e.touches[0].clientY - startY;
-                var offset = Math.sign(distY) * Math.min(Math.abs(distY) * RESISTANCE, MAX_DRAG);
-                content.style.transform = 'translateY(' + (startTranslateY + offset) + 'px)';
+                var delta = e.touches[0].clientY - startY;
+                var resisted = delta * RESISTANCE;
+                // 限制最大拉伸
+                if (resisted > MAX_DRAG)  resisted = MAX_DRAG;
+                if (resisted < -MAX_DRAG)  resisted = -MAX_DRAG;
+                el.style.transform = 'translateY(' + (baseY + resisted) + 'px)';
             }, { passive: false });
 
-            function springBack() {
-                content.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                content.style.transform = 'translateY(0)';
-                setTimeout(function() {
-                    content.style.transition = 'none';
-                }, 600);
-            }
-
-            content.addEventListener('touchend', function() {
+            el.addEventListener('touchend', function() {
                 if (!dragging) return;
                 dragging = false;
-                springBack();
+                el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                el.style.transform = 'translateY(0)';
+                setTimeout(function() { el.style.transition = 'none'; }, 600);
             });
 
-            content.addEventListener('touchcancel', function() {
+            el.addEventListener('touchcancel', function() {
                 if (!dragging) return;
                 dragging = false;
-                springBack();
+                el.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                el.style.transform = 'translateY(0)';
+                setTimeout(function() { el.style.transition = 'none'; }, 600);
             });
 
-            function getCurrentTranslateY() {
-                var m = window.getComputedStyle(content).transform;
+            function getCurrentY() {
+                var m = window.getComputedStyle(el).transform;
                 if (m === 'none') return 0;
-                var parts = m.split(',');
-                return parseFloat(parts[5]) || 0;
+                return parseFloat(m.split(',')[5]) || 0;
             }
         })();
 
+        /* ===================== */
         /* 全局禁止弹性滚动 */
+        /* ===================== */
         document.addEventListener('touchmove', function(e) {
-            var profile = document.getElementById('profilePage');
-            if (!profile.classList.contains('show')) return;
-            e.preventDefault();
+            var p = document.getElementById('profilePage');
+            if (p.classList.contains('show')) e.preventDefault();
         }, { passive: false });
     </script>
 </body>
